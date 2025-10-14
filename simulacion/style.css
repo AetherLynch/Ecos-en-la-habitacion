@@ -1,0 +1,5 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: monospace; }
+#game { position: relative; }
+#screen { border: 5px solid #222; background: #111; image-rendering: pixelated; }
+#hud { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); padding: 4px 6px; border-radius: 4px; font-size: 12px; }
