@@ -3,16 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecos en la Habitación 8-Bit</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Ecos en la Habitación</title>
+    <style>
+        body {
+            background-color: black;
+            color: #d3d3d3;
+            font-family: monospace;
+            text-align: center;
+            margin-top: 10%;
+        }
+        .pixel {
+            image-rendering: pixelated;
+            width: 200px;
+        }
+        #mensaje {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div id="game">
-        <canvas id="screen" width="320" height="240"></canvas>
-        <div id="hud">
-            Cordura: <span id="sanity">100</span>
-        </div>
-    </div>
-    <script src="game.js"></script>
+    <h1>Ecos en la Habitación</h1>
+    <img class="pixel" src="../recursos/img/personaje.png" alt="Personaje 8 bits">
+    <div id="mensaje">Presiona una tecla para escuchar un eco...</div>
+
+    <script>
+        const mensajes = [
+            "¿Estás solo aquí?",
+            "La puerta no siempre lleva a la salida...",
+            "No recuerdas lo que hiciste, ¿verdad?",
+            "El espejo te observa también."
+        ];
+
+        document.addEventListener("keydown", () => {
+            const random = Math.floor(Math.random() * mensajes.length);
+            document.getElementById("mensaje").textContent = mensajes[random];
+        });
+    </script>
 </body>
 </html>
