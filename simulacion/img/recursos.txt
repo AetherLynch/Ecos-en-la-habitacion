@@ -1,0 +1,7 @@
+Recursos gráficos para Ecos en la Habitación
+
+1. personaje.png  - Sprite del protagonista (8x8 píxeles, estilo 8 bits)
+2. fondo.png       - Fondo de la habitación (colores fríos, tono gris)
+3. puerta.png       - Sprite de la puerta (con animación mínima)
+4. eco.wav          - Sonido ambiente de eco
+5. golpe.mp3        - Sonido de golpe o impacto leve
