@@ -1,11 +1,11 @@
 # Ecos en la Habitación 
 
 ## Descripción
-Juego de terror psicológico con estética retro de 8 bits. El jugador explora un apartamento donde la realidad se distorsiona conforme baja su cordura.
+Juego de terror psicológico con estética retro. El jugador explora un apartamento donde la realidad se distorsiona conforme baja su cordura.
 
 ## Integrantes
 - Uriel — Líder de repositorio y programador
-- Jonaxde — Diseñador / Artista 8-bit
+- Jonaxde — Diseñador
 - Andres — Guionista / Documentación
 
 ## Ramas usadas
