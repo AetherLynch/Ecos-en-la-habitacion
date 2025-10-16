@@ -10,35 +10,39 @@
             color: #d3d3d3;
             font-family: monospace;
             text-align: center;
-            margin-top: 10%;
+            margin: 0;
+            overflow: hidden;
         }
-        .pixel {
+
+        h1 {
+            margin-top: 10px;
+        }
+
+        #screen {
+            display: block;
+            margin: 20px auto;
             image-rendering: pixelated;
-            width: 200px;
+            border: 2px solid #444;
+            background-color: #000;
         }
+
         #mensaje {
-            margin-top: 20px;
-            font-size: 20px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        #sanity {
+            color: #f2c94c;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <h1>Ecos en la Habitación</h1>
-    <img class="pixel" src="../recursos/img/personaje.png" alt="Personaje 8 bits">
+    <canvas id="screen" width="320" height="240"></canvas>
     <div id="mensaje">Presiona una tecla para escuchar un eco...</div>
+    <div>Sanidad: <span id="sanity">100</span>%</div>
 
-    <script>
-        const mensajes = [
-            "¿Estás solo aquí?",
-            "La puerta no siempre lleva a la salida...",
-            "No recuerdas lo que hiciste, ¿verdad?",
-            "El espejo te observa también."
-        ];
-
-        document.addEventListener("keydown", () => {
-            const random = Math.floor(Math.random() * mensajes.length);
-            document.getElementById("mensaje").textContent = mensajes[random];
-        });
-    </script>
+    <script src="js/game.js"></script>
 </body>
 </html>
