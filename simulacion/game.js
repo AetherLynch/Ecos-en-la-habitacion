@@ -1,75 +1,46 @@
-// --- VARIABLES PRINCIPALES ---
-const canvas = document.getElementById('screen');
-const ctx = canvas.getContext('2d');
-const tileSize = 32;
+// --- CONFIGURACIÓN BÁSICA ---
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d");
 
-// --- CARGAR IMÁGENES ---
-const tileset = new Image();
-tileset.src = "recursos/img/DungeonCrawl_ProjectUtumnoTileset.png"; // Ruta del tileset 8-bit
+// --- CARGAR RECURSOS ---
+const fondo = new Image();
+fondo.src = "img/fondo.png"; // asegúrate que sea .png
 
 const playerImg = new Image();
-playerImg.src = "recursos/img/personaje.png"; // Tu sprite 8-bit del personaje
+playerImg.src = "img/personaje.png";
 
-// --- MAPA (10x7) ---
-// 0 = piso, 1 = pared, 2 = zona oscura
-const map = [
-    [1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,2,0,0,0,0,1],
-    [1,0,0,2,0,0,2,0,0,1],
-    [1,0,0,0,0,0,0,2,0,1],
-    [1,0,2,0,0,2,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1],
-];
+const puertaImg = new Image();
+puertaImg.src = "img/puerta.png";
 
-// --- JUGADOR ---
-let player = { x: 64, y: 64, w: 16, h: 16 };
+// --- SONIDOS ---
+const ecoSound = new Audio("img/Eco.wav"); // si sigue siendo .waw, cambia a .wav
+const golpeSound = new Audio("img/golpe.mp3");
+
+// --- VARIABLES DEL JUEGO ---
+let player = { x: 140, y: 100, w: 24, h: 24, speed: 2 };
 let sanity = 100;
 let keys = {};
 
-window.addEventListener('keydown', e => keys[e.key] = true);
-window.addEventListener('keyup', e => keys[e.key] = false);
+// --- EVENTOS DE TECLADO ---
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
 
-// --- DIBUJAR MAPA ---
-// Coordenadas de tiles dentro del tileset:
-// piso: (0,0)   pared: (32,0)   oscuro: (64,0)
-function drawMap() {
-    for (let y = 0; y < map.length; y++) {
-        for (let x = 0; x < map[y].length; x++) {
-            const tile = map[y][x];
-            let sx = 0, sy = 0;
+// --- FUNCIONES DEL JUEGO ---
 
-            if (tile === 1) sx = 32;   // pared
-            if (tile === 2) sx = 64;   // zona oscura
-
-            ctx.drawImage(tileset, sx, sy, 32, 32, x * tileSize, y * tileSize, tileSize, tileSize);
-        }
-    }
-}
-
-// --- ACTUALIZAR LÓGICA ---
-function update() {
-    const speed = 1.5;
-
-    if (keys['ArrowUp']) player.y -= speed;
-    if (keys['ArrowDown']) player.y += speed;
-    if (keys['ArrowLeft']) player.x -= speed;
-    if (keys['ArrowRight']) player.x += speed;
-
-    // Detectar zona oscura (reduce sanidad)
-    const tileX = Math.floor(player.x / tileSize);
-    const tileY = Math.floor(player.y / tileSize);
-
-    if (map[tileY] && map[tileY][tileX] === 2) {
-        sanity -= 0.1;
+// Dibuja fondo, puerta y personaje
+function draw() {
+    // Fondo
+    if (fondo.complete && fondo.naturalWidth > 0) {
+        ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
+    } else {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    if (sanity < 0) sanity = 0;
-    document.getElementById("sanity").innerText = sanity.toFixed(0);
-}
+    // Puerta (decorativo)
+    ctx.drawImage(puertaImg, 250, 160, 40, 40);
 
-// --- DIBUJAR JUGADOR ---
-function drawPlayer() {
+    // Personaje
     if (playerImg.complete && playerImg.naturalWidth > 0) {
         ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
     } else {
@@ -78,15 +49,38 @@ function drawPlayer() {
     }
 }
 
-// --- EFECTOS DE LOCURA ---
-function drawSanityEffects() {
-    if (sanity < 50 && Math.random() < 0.1) {
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
-        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 20, 20);
+// Actualiza posición y lógica
+function update() {
+    let moved = false;
+
+    if (keys["ArrowUp"]) { player.y -= player.speed; moved = true; }
+    if (keys["ArrowDown"]) { player.y += player.speed; moved = true; }
+    if (keys["ArrowLeft"]) { player.x -= player.speed; moved = true; }
+    if (keys["ArrowRight"]) { player.x += player.speed; moved = true; }
+
+    // Colisiones con bordes
+    if (player.x < 0) { player.x = 0; golpeSound.play().catch(() => {}); }
+    if (player.y < 0) { player.y = 0; golpeSound.play().catch(() => {}); }
+    if (player.x + player.w > canvas.width) { player.x = canvas.width - player.w; golpeSound.play().catch(() => {}); }
+    if (player.y + player.h > canvas.height) { player.y = canvas.height - player.h; golpeSound.play().catch(() => {}); }
+
+    // Reducir sanidad cuando se mueve
+    if (moved) {
+        sanity -= 0.03;
+        if (sanity < 0) sanity = 0;
+        document.getElementById("sanity").textContent = sanity.toFixed(0);
     }
 }
 
-// --- MENSAJES DE ECO ---
+// Efectos visuales cuando la sanidad baja
+function drawSanityEffects() {
+    if (sanity < 50 && Math.random() < 0.1) {
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 10, 10);
+    }
+}
+
+// Mensajes de eco
 const mensajes = [
     "¿Estás solo aquí?",
     "La puerta no siempre lleva a la salida...",
@@ -94,19 +88,25 @@ const mensajes = [
     "El espejo te observa también."
 ];
 
-document.addEventListener("keydown", () => {
+document.addEventListener("keydown", e => {
+    // Ignorar teclas de movimiento
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
+
     const random = Math.floor(Math.random() * mensajes.length);
     document.getElementById("mensaje").textContent = mensajes[random];
+
+    // Sonido del eco
+    ecoSound.currentTime = 0;
+    ecoSound.play().catch(() => {});
 });
 
-// --- BUCLE PRINCIPAL ---
+// Bucle principal
 function loop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMap();
     update();
-    drawPlayer();
+    draw();
     drawSanityEffects();
     requestAnimationFrame(loop);
 }
 
+// Inicia el juego
 loop();

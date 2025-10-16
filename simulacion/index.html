@@ -1,48 +1,142 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecos en la Habitación</title>
-    <style>
-        body {
-            background-color: black;
-            color: #d3d3d3;
-            font-family: monospace;
-            text-align: center;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        h1 {
-            margin-top: 10px;
-        }
-
-        #screen {
-            display: block;
-            margin: 20px auto;
-            image-rendering: pixelated;
-            border: 2px solid #444;
-            background-color: #000;
-        }
-
-        #mensaje {
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        #sanity {
-            color: #f2c94c;
-            font-size: 18px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecos en la Habitación</title>
+<style>
+  body {
+    background-color: black;
+    color: #d3d3d3;
+    font-family: monospace;
+    text-align: center;
+    margin: 0;
+    overflow: hidden;
+  }
+  #screen {
+    display: block;
+    margin: 20px auto;
+    image-rendering: pixelated;
+    border: 2px solid #444;
+    background-color: #000;
+  }
+  #mensaje {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+  #sanity {
+    color: #f2c94c;
+    font-size: 18px;
+  }
+</style>
 </head>
 <body>
-    <h1>Ecos en la Habitación</h1>
-    <canvas id="screen" width="320" height="240"></canvas>
-    <div id="mensaje">Presiona una tecla para escuchar un eco...</div>
-    <div>Sanidad: <span id="sanity">100</span>%</div>
+  <h1>Ecos en la Habitación</h1>
+  <canvas id="screen" width="320" height="240"></canvas>
+  <div id="mensaje">Presiona una tecla para escuchar un eco...</div>
+  <div>Sanidad: <span id="sanity">100</span>%</div>
 
-    <script src="js/game.js"></script>
+<script>
+// --- CONFIGURACIÓN BÁSICA ---
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d");
+
+// --- CARGAR RECURSOS ---
+const fondo = new Image();
+fondo.src = "img/fondo.png"; // asegúrate que sea .png
+
+const playerImg = new Image();
+playerImg.src = "img/personaje.png";
+
+const puertaImg = new Image();
+puertaImg.src = "img/puerta.png";
+
+const ecoSound = new Audio("img/Eco.wav"); // renómbralo si es .waw
+const golpeSound = new Audio("img/golpe.mp3");
+
+// --- VARIABLES DEL JUEGO ---
+let player = { x: 140, y: 100, w: 24, h: 24, speed: 2 };
+let sanity = 100;
+let keys = {};
+
+// --- CONTROL DE TECLAS ---
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
+
+// --- ACTUALIZAR ---
+function update() {
+  let moved = false;
+  if (keys["ArrowUp"]) { player.y -= player.speed; moved = true; }
+  if (keys["ArrowDown"]) { player.y += player.speed; moved = true; }
+  if (keys["ArrowLeft"]) { player.x -= player.speed; moved = true; }
+  if (keys["ArrowRight"]) { player.x += player.speed; moved = true; }
+
+  // bordes
+  if (player.x < 0) { player.x = 0; golpeSound.play().catch(() => {}); }
+  if (player.y < 0) { player.y = 0; golpeSound.play().catch(() => {}); }
+  if (player.x + player.w > canvas.width) { player.x = canvas.width - player.w; golpeSound.play().catch(() => {}); }
+  if (player.y + player.h > canvas.height) { player.y = canvas.height - player.h; golpeSound.play().catch(() => {}); }
+
+  if (moved) {
+    sanity -= 0.03;
+    if (sanity < 0) sanity = 0;
+    document.getElementById("sanity").textContent = sanity.toFixed(0);
+  }
+}
+
+// --- DIBUJAR ---
+function draw() {
+  if (fondo.complete && fondo.naturalWidth > 0) {
+    ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
+  } else {
+    // FONDO DE SEGURIDAD
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  if (puertaImg.complete && puertaImg.naturalWidth > 0) {
+    ctx.drawImage(puertaImg, 250, 160, 40, 40);
+  }
+
+  if (playerImg.complete && playerImg.naturalWidth > 0) {
+    ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+  } else {
+    ctx.fillStyle = "#f2c94c";
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+  }
+}
+
+// --- EFECTOS ---
+function drawSanityEffects() {
+  if (sanity < 50 && Math.random() < 0.1) {
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 10, 10);
+  }
+}
+
+const mensajes = [
+  "¿Estás solo aquí?",
+  "La puerta no siempre lleva a la salida...",
+  "No recuerdas lo que hiciste, ¿verdad?",
+  "El espejo te observa también."
+];
+
+document.addEventListener("keydown", e => {
+  if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) return;
+  const random = Math.floor(Math.random() * mensajes.length);
+  document.getElementById("mensaje").textContent = mensajes[random];
+  ecoSound.currentTime = 0;
+  ecoSound.play().catch(() => {});
+});
+
+// --- LOOP ---
+function loop() {
+  update();
+  draw();
+  drawSanityEffects();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>
