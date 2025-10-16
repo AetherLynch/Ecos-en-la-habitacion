@@ -35,7 +35,6 @@
   <canvas id="screen" width="320" height="240"></canvas>
   <div id="mensaje">Presiona una tecla para escuchar un eco...</div>
   <div>Sanidad: <span id="sanity">100</span>%</div>
-
 <script>
 // --- CONFIGURACIÓN BÁSICA ---
 const canvas = document.getElementById("screen");
@@ -43,7 +42,7 @@ const ctx = canvas.getContext("2d");
 
 // --- CARGAR RECURSOS ---
 const fondo = new Image();
-fondo.src = "img/fondo.png"; // asegúrate que sea .png
+fondo.src = "img/fondo.png"; 
 
 const playerImg = new Image();
 playerImg.src = "img/personaje.png";
@@ -51,36 +50,66 @@ playerImg.src = "img/personaje.png";
 const puertaImg = new Image();
 puertaImg.src = "img/puerta.png";
 
-const ecoSound = new Audio("img/Eco.wav"); // renómbralo si es .waw
+const ecoSound = new Audio("img/Eco.wav"); 
 const golpeSound = new Audio("img/golpe.mp3");
 
 // --- VARIABLES DEL JUEGO ---
 let player = { x: 140, y: 100, w: 24, h: 24, speed: 2 };
 let sanity = 100;
 let keys = {};
+let pasos = 0; // Contador de pasos
+let lastMensajeIndex = -1;
 
 // --- CONTROL DE TECLAS ---
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
 
+// --- MENSAJES ---
+const mensajes = [
+  "¿Estás solo aquí?",
+  "La puerta no siempre lleva a la salida...",
+  "No recuerdas lo que hiciste, ¿verdad?",
+  "El espejo te observa también."
+];
+
 // --- ACTUALIZAR ---
 function update() {
   let moved = false;
+
   if (keys["ArrowUp"]) { player.y -= player.speed; moved = true; }
   if (keys["ArrowDown"]) { player.y += player.speed; moved = true; }
   if (keys["ArrowLeft"]) { player.x -= player.speed; moved = true; }
   if (keys["ArrowRight"]) { player.x += player.speed; moved = true; }
 
-  // bordes
+  // Bordes
   if (player.x < 0) { player.x = 0; golpeSound.play().catch(() => {}); }
   if (player.y < 0) { player.y = 0; golpeSound.play().catch(() => {}); }
   if (player.x + player.w > canvas.width) { player.x = canvas.width - player.w; golpeSound.play().catch(() => {}); }
   if (player.y + player.h > canvas.height) { player.y = canvas.height - player.h; golpeSound.play().catch(() => {}); }
 
   if (moved) {
+    pasos++;
+    // Reducir sanidad
     sanity -= 0.03;
     if (sanity < 0) sanity = 0;
     document.getElementById("sanity").textContent = sanity.toFixed(0);
+
+    // --- REPRODUCIR ECO ALEATORIO ---
+    if (Math.random() < 0.02) { // Probabilidad más baja (2%)
+      ecoSound.volume = 0.1 + Math.random() * 0.2; // Volumen bajo y aleatorio
+      ecoSound.currentTime = 0;
+      ecoSound.play().catch(() => {});
+    }
+
+    // --- CAMBIAR MENSAJE CADA 15 PASOS ---
+    if (pasos % 15 === 0) {
+      let index;
+      do {
+        index = Math.floor(Math.random() * mensajes.length);
+      } while(index === lastMensajeIndex); // Evita repetición inmediata
+      lastMensajeIndex = index;
+      document.getElementById("mensaje").textContent = mensajes[index];
+    }
   }
 }
 
@@ -89,7 +118,6 @@ function draw() {
   if (fondo.complete && fondo.naturalWidth > 0) {
     ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
   } else {
-    // FONDO DE SEGURIDAD
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
@@ -114,13 +142,7 @@ function drawSanityEffects() {
   }
 }
 
-const mensajes = [
-  "¿Estás solo aquí?",
-  "La puerta no siempre lleva a la salida...",
-  "No recuerdas lo que hiciste, ¿verdad?",
-  "El espejo te observa también."
-];
-
+// Mostrar mensajes solo para otras teclas
 document.addEventListener("keydown", e => {
   if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) return;
   const random = Math.floor(Math.random() * mensajes.length);
@@ -138,5 +160,3 @@ function loop() {
 }
 loop();
 </script>
-</body>
-</html>
